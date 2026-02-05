@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Invoice Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <aside class="editor-panel">
+            <header class="panel-header">
+                <h2><i class="fa-solid fa-pen-nib"></i> Invoice Editor</h2>
+                <p>Fill details to update preview instantly.</p>
+            </header>
+
+            <div class="form-group">
+                <label>Invoice Number</label>
+                <input type="text" id="inNum" value="#INV-001" oninput="updatePreview()">
+            </div>
+            
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="inDate" oninput="updatePreview()">
+            </div>
+
+            <div class="accordion">
+                <h3>From (Sender)</h3>
+                <input type="text" id="senderName" placeholder="Your Company Name" oninput="updatePreview()">
+                <input type="text" id="senderEmail" placeholder="Email Address" oninput="updatePreview()">
+                <input type="text" id="senderAddress" placeholder="Street Address" oninput="updatePreview()">
+            </div>
+
+            <div class="accordion">
+                <h3>Bill To (Client)</h3>
+                <input type="text" id="clientName" placeholder="Client Name" oninput="updatePreview()">
+                <input type="text" id="clientEmail" placeholder="Client Email" oninput="updatePreview()">
+                <input type="text" id="clientAddress" placeholder="Client Address" oninput="updatePreview()">
+            </div>
+
+            <div class="items-editor">
+                <h3>Items</h3>
+                <div id="items-list">
+                    </div>
+                <button class="btn-secondary" onclick="addItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
+            </div>
+
+            <div class="form-group">
+                <label>Tax Rate (%)</label>
+                <input type="number" id="taxRate" value="0" oninput="calculateTotal()">
+            </div>
+
+            <div class="form-group">
+                <label>Notes / Terms</label>
+                <textarea id="notesInput" rows="3" placeholder="Thank you for your business..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="actions">
+                <button class="btn-primary" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                <button class="btn-outline" onclick="downloadJPG()"><i class="fa-solid fa-image"></i> Save JPG</button>
+                <button class="btn-outline" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+            </div>
+        </aside>
+
+        <main class="preview-panel">
+            <div class="preview-container">
+                <div id="invoice-capture" class="invoice-paper">
+                    
+                    <div class="inv-header">
+                        <div class="brand">
+                            <h1 id="p-senderName">Your Company</h1>
+                            <p id="p-senderEmail">email@example.com</p>
+                        </div>
+                        <div class="inv-meta">
+                            <h1>INVOICE</h1>
+                            <p>No: <span id="p-num">#INV-001</span></p>
+                            <p>Date: <span id="p-date">Jan 01, 2024</span></p>
+                        </div>
+                    </div>
+
+                    <div class="inv-body">
+                        <div class="bill-to">
+                            <h4>Bill To:</h4>
+                            <p id="p-clientName">Client Name</p>
+                            <p id="p-clientAddress">Client Address</p>
+                        </div>
+                    </div>
+
+                    <table class="inv-table">
+                        <thead>
+                            <tr>
+                                <th width="50%">Description</th>
+                                <th width="15%">Qty</th>
+                                <th width="15%">Price</th>
+                                <th width="20%">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="p-items-body">
+                            </tbody>
+                    </table>
+
+                    <div class="inv-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span id="p-subtotal">$0.00</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax (<span id="p-taxRate">0</span>%)</span>
+                            <span id="p-taxAmt">$0.00</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span id="p-total">$0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="inv-footer">
+                        <h4>Notes:</h4>
+                        <p id="p-notes">Thank you for your business.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

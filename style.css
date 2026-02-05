@@ -1,0 +1,99 @@
+:root {
+    --primary: #2563eb;
+    --dark: #1e293b;
+    --light: #f8fafc;
+    --border: #e2e8f0;
+    --text: #334155;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: #eef2f6; height: 100vh; overflow: hidden; }
+
+/* LAYOUT */
+.app-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* EDITOR SIDEBAR */
+.editor-panel {
+    width: 400px;
+    background: #fff;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+    z-index: 10;
+}
+
+.panel-header h2 { font-size: 1.2rem; color: var(--dark); margin-bottom: 5px; }
+.panel-header p { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
+
+.form-group, .accordion { margin-bottom: 15px; }
+label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+
+/* Item Row in Editor */
+.item-row { display: flex; gap: 5px; margin-bottom: 10px; }
+.item-row input { flex: 1; }
+.item-row .qty { flex: 0 0 60px; }
+.item-row .price { flex: 0 0 80px; }
+.btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 0 10px; border-radius: 4px; cursor: pointer; }
+
+/* Buttons */
+.btn-primary { background: var(--primary); color: #fff; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
+.btn-secondary { background: var(--light); color: var(--dark); width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 48%; padding: 10px; border-radius: 6px; cursor: pointer; margin-right: 2%; font-size: 0.85rem; }
+.btn-outline:last-child { margin-right: 0; }
+.actions { margin-top: 20px; }
+
+/* PREVIEW PANEL */
+.preview-panel {
+    flex: 1;
+    background: #cbd5e1;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.invoice-paper {
+    width: 210mm;
+    min-height: 297mm; /* A4 Size */
+    background: #fff;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    position: relative;
+    color: var(--dark);
+}
+
+/* INVOICE VISUAL DESIGN */
+.inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
+.inv-meta h1 { color: var(--primary); font-size: 2.5rem; letter-spacing: -1px; margin: 0; }
+.brand h1 { font-size: 1.5rem; margin-bottom: 5px; }
+
+.inv-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
+.inv-table th { background: var(--light); padding: 12px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: #64748b; }
+.inv-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); }
+.inv-table td:last-child { text-align: right; font-weight: 600; }
+
+.inv-totals { width: 250px; margin-left: auto; }
+.total-row { display: flex; justify-content: space-between; padding: 8px 0; }
+.grand-total { border-top: 2px solid var(--dark); font-weight: 700; font-size: 1.2rem; padding-top: 15px; }
+
+/* Responsive Mobile */
+@media (max-width: 900px) {
+    .app-container { flex-direction: column; overflow: auto; }
+    .editor-panel { width: 100%; height: auto; }
+    .invoice-paper { width: 100%; min-height: auto; }
+}
