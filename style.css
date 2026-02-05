@@ -2,20 +2,17 @@
     --primary: #2563eb;
     --dark: #1e293b;
     --light: #f8fafc;
-    --border: #e2e8f0;
-    --text: #334155;
+    --border: #cbd5e1;
+    --table-border: #94a3b8; 
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: #eef2f6; height: 100vh; overflow: hidden; }
+body { font-family: 'Inter', sans-serif; background: #525252; height: 100vh; overflow: hidden; }
 
 /* LAYOUT */
-.app-container {
-    display: flex;
-    height: 100vh;
-}
+.app-container { display: flex; height: 100vh; }
 
-/* EDITOR SIDEBAR */
+/* SIDEBAR */
 .editor-panel {
     width: 400px;
     background: #fff;
@@ -24,76 +21,121 @@ body { font-family: 'Inter', sans-serif; background: #eef2f6; height: 100vh; ove
     flex-direction: column;
     padding: 20px;
     overflow-y: auto;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.05);
     z-index: 10;
 }
-
-.panel-header h2 { font-size: 1.2rem; color: var(--dark); margin-bottom: 5px; }
-.panel-header p { font-size: 0.85rem; color: #64748b; margin-bottom: 20px; }
-
-.form-group, .accordion { margin-bottom: 15px; }
-label { display: block; font-size: 0.8rem; font-weight: 600; color: #64748b; margin-bottom: 5px; }
-input, textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: 0.2s;
-}
+.accordion h3 { font-size: 0.9rem; color: var(--primary); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+.form-group, .accordion { margin-bottom: 20px; }
+label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; margin-top: 8px; }
+input, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; }
 input:focus, textarea:focus { border-color: var(--primary); outline: none; }
 
-/* Item Row in Editor */
-.item-row { display: flex; gap: 5px; margin-bottom: 10px; }
+/* ITEM ROWS */
+.item-row { display: flex; gap: 5px; margin-bottom: 8px; }
 .item-row input { flex: 1; }
 .item-row .qty { flex: 0 0 60px; }
 .item-row .price { flex: 0 0 80px; }
-.btn-del { background: #fee2e2; color: #ef4444; border: none; padding: 0 10px; border-radius: 4px; cursor: pointer; }
+.btn-del { background: #fee2e2; color: #ef4444; border: none; width: 30px; border-radius: 4px; cursor: pointer; }
 
-/* Buttons */
+/* BUTTONS */
 .btn-primary { background: var(--primary); color: #fff; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
-.btn-secondary { background: var(--light); color: var(--dark); width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
-.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 48%; padding: 10px; border-radius: 6px; cursor: pointer; margin-right: 2%; font-size: 0.85rem; }
+.btn-secondary { background: var(--light); color: var(--dark); width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; margin-top: 5px; }
+.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 48%; padding: 10px; border-radius: 6px; cursor: pointer; margin-right: 2%; }
 .btn-outline:last-child { margin-right: 0; }
-.actions { margin-top: 20px; }
 
-/* PREVIEW PANEL */
-.preview-panel {
-    flex: 1;
-    background: #cbd5e1;
-    display: flex;
-    justify-content: center;
-    padding: 40px;
-    overflow-y: auto;
-}
-
+/* PREVIEW AREA */
+.preview-panel { flex: 1; display: flex; justify-content: center; padding: 40px; overflow-y: auto; background: #404040; }
 .invoice-paper {
     width: 210mm;
-    min-height: 297mm; /* A4 Size */
+    min-height: 297mm;
     background: #fff;
-    padding: 40px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    position: relative;
+    padding: 50px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
     color: var(--dark);
+    display: flex; 
+    flex-direction: column;
 }
 
-/* INVOICE VISUAL DESIGN */
-.inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--primary); padding-bottom: 20px; margin-bottom: 30px; }
-.inv-meta h1 { color: var(--primary); font-size: 2.5rem; letter-spacing: -1px; margin: 0; }
-.brand h1 { font-size: 1.5rem; margin-bottom: 5px; }
+/* --- INVOICE DESIGN (SCREENSHOT MATCH) --- */
 
-.inv-table { width: 100%; border-collapse: collapse; margin: 30px 0; }
-.inv-table th { background: var(--light); padding: 12px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: #64748b; }
-.inv-table td { padding: 15px 12px; border-bottom: 1px solid var(--border); }
+/* 1. TOP HEADER: Invoice Title Center, Data Right */
+.top-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    position: relative;
+}
+.title-section {
+    position: absolute;
+    left: 0; 
+    right: 0;
+    text-align: center;
+    top: 0;
+}
+.title-section h1 {
+    font-size: 2.8rem;
+    color: var(--primary);
+    font-weight: 800;
+    margin: 0;
+    text-transform: uppercase;
+}
+.meta-section {
+    margin-left: auto; /* Pushes to right */
+    text-align: right;
+    margin-top: 45px; /* Push down below the centered title level if needed, or align aside */
+    z-index: 2;
+}
+.meta-section p { font-weight: 700; font-size: 1rem; color: #334155; margin-bottom: 4px; }
+
+/* 2. DIVIDER */
+.divider-line {
+    height: 3px;
+    background: var(--primary);
+    width: 100%;
+    margin: 20px 0 30px 0;
+}
+
+/* 3. ADDRESS SECTION: Split Left/Right */
+.address-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+/* Left Column: Sender */
+.sender-col { text-align: left; max-width: 50%; }
+.sender-col h2 { font-size: 1.6rem; color: var(--dark); margin-bottom: 5px; font-weight: 800; }
+.services-text { font-weight: 600; color: #475569; margin-bottom: 10px; font-size: 0.95rem; }
+.contact-details p { font-size: 0.95rem; color: #64748b; line-height: 1.5; margin-bottom: 2px; }
+
+/* Right Column: Bill To */
+.client-col { text-align: right; max-width: 45%; }
+.bill-label { color: #94a3b8; font-size: 1rem; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
+.client-col h2 { font-size: 1.4rem; color: var(--dark); margin-bottom: 10px; }
+
+/* TABLE */
+.inv-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid var(--table-border); }
+.inv-table th { background: #f1f5f9; padding: 12px; text-align: center; border: 1px solid var(--table-border); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
+.inv-table th:first-child { text-align: left; }
+.inv-table td { padding: 12px; border: 1px solid var(--table-border); font-size: 0.95rem; }
+.inv-table td:not(:first-child) { text-align: center; }
 .inv-table td:last-child { text-align: right; font-weight: 600; }
 
-.inv-totals { width: 250px; margin-left: auto; }
+/* TOTALS */
+.inv-totals { width: 250px; margin-left: auto; margin-top: 10px; }
 .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
-.grand-total { border-top: 2px solid var(--dark); font-weight: 700; font-size: 1.2rem; padding-top: 15px; }
+.grand-total { border-top: 2px solid var(--dark); font-weight: 800; font-size: 1.2rem; padding-top: 10px; color: var(--primary); }
 
-/* Responsive Mobile */
+/* FOOTER */
+.inv-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9rem; color: #64748b; }
+
+/* Mobile */
 @media (max-width: 900px) {
     .app-container { flex-direction: column; overflow: auto; }
     .editor-panel { width: 100%; height: auto; }
-    .invoice-paper { width: 100%; min-height: auto; }
+    .invoice-paper { width: 100%; min-height: auto; padding: 20px; }
+    .title-section { position: relative; text-align: left; }
+    .meta-section { margin-top: 10px; text-align: left; margin-left: 0; }
+    .address-section { flex-direction: column; gap: 20px; }
+    .client-col { text-align: left; max-width: 100%; }
 }
