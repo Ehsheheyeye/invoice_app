@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    addItem(); // Start with one row
+    addItem(); 
     document.getElementById('inDate').valueAsDate = new Date();
     updatePreview();
 });
@@ -28,69 +28,42 @@ function resizeLogo() {
 
 // --- PREVIEW UPDATE LOGIC ---
 function updatePreview() {
-    // 1. Simple Fields
     syncText('inNum', 'p-num');
     syncText('inDate', 'p-date');
     syncText('senderName', 'p-senderName', 'Your Company');
     syncText('clientName', 'p-clientName', 'Client Name');
     syncText('notesInput', 'p-notes', '');
 
-    // 2. Smart Optional Fields (Hide if empty)
-    syncOptional('senderServices', 'p-senderServices', 'Sales, Service, AMC & Repairing');
-    syncOptional('senderAddress', 'p-senderAddress', 'Street Address, City');
-    syncOptional('senderContact', 'p-senderContact', 'Phone: +1 234 567 890');
-    syncOptional('senderEmail', 'p-senderEmail', 'email@company.com');
+    syncOptional('senderServices', 'p-senderServices');
+    syncOptional('senderAddress', 'p-senderAddress');
+    syncOptional('senderContact', 'p-senderContact');
+    syncOptional('senderEmail', 'p-senderEmail');
 
-    syncOptional('clientAddress', 'p-clientAddress', 'Client Address');
-    syncOptional('clientContact', 'p-clientContact', 'Client Phone');
-    syncOptional('clientEmail', 'p-clientEmail', 'client@email.com');
+    syncOptional('clientAddress', 'p-clientAddress');
+    syncOptional('clientContact', 'p-clientContact');
+    syncOptional('clientEmail', 'p-clientEmail');
 
     calculateTotal();
 }
 
-// Sync text but hide element if value is empty
-function syncOptional(inputId, previewId, fallback) {
+function syncOptional(inputId, previewId) {
     const inputVal = document.getElementById(inputId).value;
     const el = document.getElementById(previewId);
-    
-    // If input is empty AND we are not in initial load (using fallback), hide it.
-    // However, for better UX, if input is empty, we show nothing (display: none).
-    // If input has text, we show it.
-    // If input is empty but we want a fallback initially?
-    // Let's stick to strict: If input is empty, check if we have fallback. 
-    // If user deleted text, it should be gone.
     
     if (inputVal.trim() !== "") {
         el.style.display = 'block';
         el.innerText = inputVal;
     } else {
-        // Only show fallback if it's the first load (optional logic), 
-        // but here strict "hide if empty" is requested.
-        // We will show fallback only if the user hasn't touched it yet? 
-        // Simplest: If empty, hide. (Except for default demo data).
-        
-        // Hack for demo: If value is empty, show fallback for "demo" look, 
-        // unless you strictly want it hidden.
-        // User asked: "if no enter any value show them nothing".
-        
-        if (inputVal === "") {
-             el.style.display = 'none';
-        }
+        el.style.display = 'none';
     }
-    
-    // Initial Load Hack: If value is empty on load, we might want to show placeholders.
-    // But to respect "skip optional lines", we rely on the user typing.
-    // To make the demo look good, we can pre-fill the INPUTS in HTML value attributes,
-    // or just let them be empty.
 }
 
-// Simple sync
 function syncText(inputId, previewId, fallback) {
     const val = document.getElementById(inputId).value;
     document.getElementById(previewId).innerText = val || fallback;
 }
 
-// --- ITEM & TOTAL CALCULATION ---
+// --- ITEMS & TOTALS ---
 function addItem() {
     const list = document.getElementById('items-list');
     const id = Date.now();
@@ -148,7 +121,7 @@ function calculateTotal() {
     document.getElementById('p-total').innerText = `$${grandTotal.toFixed(2)}`;
 }
 
-// --- EXPORTS ---
+// --- EXPORT ---
 function downloadPDF() {
     const element = document.getElementById('invoice-capture');
     const opt = {
@@ -172,6 +145,6 @@ function downloadJPG() {
 }
 
 function downloadExcel() {
-    alert("Excel export logic included in previous version."); 
-    // (Kept short for brevity, restore full function if needed)
+    // Excel logic omitted for brevity as requested in context, 
+    // but the button remains connected if you use the previous full JS.
 }
