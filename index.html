@@ -12,70 +12,6 @@
 
     <div class="app-container">
         
-        <aside class="editor-panel">
-            <header class="panel-header">
-                <h2><i class="fa-solid fa-pen-nib"></i> Invoice Editor</h2>
-            </header>
-
-            <div class="accordion">
-                <h3><i class="fa-solid fa-image"></i> Company Logo</h3>
-                <label>Upload Logo</label>
-                <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload()">
-                
-                <label>Logo Size</label>
-                <input type="range" id="logoSize" min="50" max="300" value="150" oninput="resizeLogo()">
-            </div>
-
-            <div class="form-group">
-                <label>Invoice Number</label>
-                <input type="text" id="inNum" value="#INV-001" oninput="updatePreview()">
-            </div>
-            
-            <div class="form-group">
-                <label>Date</label>
-                <input type="date" id="inDate" oninput="updatePreview()">
-            </div>
-
-            <div class="accordion">
-                <h3>From (Sender)</h3>
-                <input type="text" id="senderName" placeholder="Company Name" oninput="updatePreview()">
-                <input type="text" id="senderServices" placeholder="Services (e.g. Sales, Service...)" oninput="updatePreview()">
-                <input type="text" id="senderAddress" placeholder="Street Address" oninput="updatePreview()">
-                <input type="text" id="senderContact" placeholder="Phone Number" oninput="updatePreview()">
-                <input type="text" id="senderEmail" placeholder="Email Address" oninput="updatePreview()">
-            </div>
-
-            <div class="accordion">
-                <h3>Bill To (Client)</h3>
-                <input type="text" id="clientName" placeholder="Client Name" oninput="updatePreview()">
-                <input type="text" id="clientAddress" placeholder="Client Address" oninput="updatePreview()">
-                <input type="text" id="clientContact" placeholder="Client Phone" oninput="updatePreview()">
-                <input type="text" id="clientEmail" placeholder="Client Email" oninput="updatePreview()">
-            </div>
-
-            <div class="items-editor">
-                <h3>Items</h3>
-                <div id="items-list"></div>
-                <button class="btn-secondary" onclick="addItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
-            </div>
-
-            <div class="form-group">
-                <label>Tax Rate (%)</label>
-                <input type="number" id="taxRate" value="0" oninput="calculateTotal()">
-            </div>
-
-            <div class="form-group">
-                <label>Notes</label>
-                <textarea id="notesInput" rows="2" placeholder="Thank you for your business..." oninput="updatePreview()"></textarea>
-            </div>
-
-            <div class="actions">
-                <button class="btn-primary" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
-                <button class="btn-outline" onclick="downloadJPG()"><i class="fa-solid fa-image"></i> Save JPG</button>
-                <button class="btn-outline" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-            </div>
-        </aside>
-
         <main class="preview-panel">
             <div class="preview-container">
                 <div id="invoice-capture" class="invoice-paper">
@@ -153,6 +89,70 @@
                 </div>
             </div>
         </main>
+
+        <aside class="editor-panel">
+            <header class="panel-header">
+                <h2><i class="fa-solid fa-pen-nib"></i> Invoice Editor</h2>
+            </header>
+
+            <div class="accordion">
+                <h3><i class="fa-solid fa-image"></i> Company Logo</h3>
+                <label>Upload Logo</label>
+                <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload()">
+                
+                <label>Logo Size</label>
+                <input type="range" id="logoSize" min="50" max="300" value="150" oninput="resizeLogo()">
+            </div>
+
+            <div class="form-group">
+                <label>Invoice Number</label>
+                <input type="text" id="inNum" value="#INV-001" oninput="updatePreview()">
+            </div>
+            
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="inDate" oninput="updatePreview()">
+            </div>
+
+            <div class="accordion">
+                <h3>From (Sender)</h3>
+                <input type="text" id="senderName" placeholder="Company Name" oninput="updatePreview()">
+                <input type="text" id="senderServices" placeholder="Services (e.g. Sales, Service...)" oninput="updatePreview()">
+                <input type="text" id="senderAddress" placeholder="Street Address" oninput="updatePreview()">
+                <input type="text" id="senderContact" placeholder="Phone Number" oninput="updatePreview()">
+                <input type="text" id="senderEmail" placeholder="Email Address" oninput="updatePreview()">
+            </div>
+
+            <div class="accordion">
+                <h3>Bill To (Client)</h3>
+                <input type="text" id="clientName" placeholder="Client Name" oninput="updatePreview()">
+                <input type="text" id="clientAddress" placeholder="Client Address" oninput="updatePreview()">
+                <input type="text" id="clientContact" placeholder="Client Phone" oninput="updatePreview()">
+                <input type="text" id="clientEmail" placeholder="Client Email" oninput="updatePreview()">
+            </div>
+
+            <div class="items-editor">
+                <h3>Items</h3>
+                <div id="items-list"></div>
+                <button class="btn-secondary" onclick="addItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
+            </div>
+
+            <div class="form-group">
+                <label>Tax Rate (%)</label>
+                <input type="number" id="taxRate" value="0" oninput="calculateTotal()">
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="notesInput" rows="2" placeholder="Thank you for your business..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <div class="actions">
+                <button class="btn-primary" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                <button class="btn-outline" onclick="downloadJPG()"><i class="fa-solid fa-image"></i> Save JPG</button>
+                <button class="btn-outline" onclick="downloadExcel()"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+            </div>
+        </aside>
 
     </div>
 
