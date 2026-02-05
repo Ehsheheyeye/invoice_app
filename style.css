@@ -12,17 +12,22 @@ body { font-family: 'Inter', sans-serif; background: #525252; height: 100vh; ove
 /* LAYOUT */
 .app-container { display: flex; height: 100vh; }
 
-/* SIDEBAR */
+/* SIDEBAR (NOW ON RIGHT) */
 .editor-panel {
     width: 400px;
     background: #fff;
-    border-right: 1px solid var(--border);
+    
+    /* CHANGED: Border is now on the LEFT, shadow casts to the LEFT */
+    border-left: 1px solid var(--border);
+    box-shadow: -2px 0 10px rgba(0,0,0,0.05);
+    
     display: flex;
     flex-direction: column;
     padding: 20px;
     overflow-y: auto;
     z-index: 10;
 }
+
 .accordion h3 { font-size: 0.9rem; color: var(--primary); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
 .form-group, .accordion { margin-bottom: 20px; }
 label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; margin-top: 8px; }
@@ -42,8 +47,16 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; }
 .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 48%; padding: 10px; border-radius: 6px; cursor: pointer; margin-right: 2%; }
 .btn-outline:last-child { margin-right: 0; }
 
-/* PREVIEW AREA */
-.preview-panel { flex: 1; display: flex; justify-content: center; padding: 40px; overflow-y: auto; background: #404040; }
+/* PREVIEW AREA (NOW ON LEFT) */
+.preview-panel { 
+    flex: 1; 
+    display: flex; 
+    justify-content: center; 
+    padding: 40px; 
+    overflow-y: auto; 
+    background: #404040; 
+}
+
 .invoice-paper {
     width: 210mm;
     min-height: 297mm;
@@ -55,9 +68,7 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; }
     flex-direction: column;
 }
 
-/* --- INVOICE DESIGN (SCREENSHOT MATCH) --- */
-
-/* 1. TOP HEADER: Invoice Title Center, Data Right */
+/* --- INVOICE DESIGN (UNCHANGED) --- */
 .top-header {
     display: flex;
     justify-content: space-between;
@@ -80,14 +91,14 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; }
     text-transform: uppercase;
 }
 .meta-section {
-    margin-left: auto; /* Pushes to right */
+    margin-left: auto; 
     text-align: right;
-    margin-top: 45px; /* Push down below the centered title level if needed, or align aside */
+    margin-top: 45px;
     z-index: 2;
 }
 .meta-section p { font-weight: 700; font-size: 1rem; color: #334155; margin-bottom: 4px; }
 
-/* 2. DIVIDER */
+/* DIVIDER */
 .divider-line {
     height: 3px;
     background: var(--primary);
@@ -95,7 +106,7 @@ input:focus, textarea:focus { border-color: var(--primary); outline: none; }
     margin: 20px 0 30px 0;
 }
 
-/* 3. ADDRESS SECTION: Split Left/Right */
+/* ADDRESS SECTION */
 .address-section {
     display: flex;
     justify-content: space-between;
