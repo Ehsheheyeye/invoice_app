@@ -1,8 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
-    addItem(); 
+    // Initial Setup
     document.getElementById('inDate').valueAsDate = new Date();
+    addItem(); // Add one empty row
     updatePreview();
+    
+    // Set initial Zoom
+    setZoom(0.8);
 });
+
+// --- ZOOM LOGIC ---
+function setZoom(value) {
+    const wrapper = document.getElementById('previewWrapper');
+    const display = document.getElementById('zoomValue');
+    
+    wrapper.style.transform = `scale(${value})`;
+    display.innerText = `${Math.round(value * 100)}%`;
+}
+
+function adjustZoom(delta) {
+    const range = document.getElementById('zoomRange');
+    let newVal = parseFloat(range.value) + delta;
+    newVal = Math.max(0.4, Math.min(1.5, newVal));
+    range.value = newVal;
+    setZoom(newVal);
+}
+
+// --- SIDEBAR ACCORDION LOGIC ---
+function toggleCard(header) {
+    // Toggle the 'active' class for rotation
+    header.classList.toggle('active');
+    
+    // Toggle the body visibility
+    const body = header.nextElementSibling;
+    if (body.style.display === "block") {
+        body.style.display = "none";
+    } else {
+        body.style.display = "block";
+    }
+}
 
 // --- LOGO HANDLING ---
 function handleLogoUpload() {
@@ -26,7 +61,7 @@ function resizeLogo() {
     img.style.width = `${size}px`;
 }
 
-// --- PREVIEW UPDATE LOGIC ---
+// --- PREVIEW UPDATE ---
 function updatePreview() {
     syncText('inNum', 'p-num');
     syncText('inDate', 'p-date');
@@ -44,6 +79,7 @@ function updatePreview() {
     syncOptional('clientEmail', 'p-clientEmail');
 
     calculateTotal();
+    checkOverflow();
 }
 
 function syncOptional(inputId, previewId) {
@@ -119,11 +155,31 @@ function calculateTotal() {
     document.getElementById('p-taxRate').innerText = taxRate;
     document.getElementById('p-taxAmt').innerText = `$${taxAmt.toFixed(2)}`;
     document.getElementById('p-total').innerText = `$${grandTotal.toFixed(2)}`;
+    
+    checkOverflow();
+}
+
+// --- OVERFLOW CHECKER ---
+function checkOverflow() {
+    const paper = document.getElementById('invoice-capture');
+    const marker = document.getElementById('page-break-line');
+    
+    // A4 height in pixels (approx) at standard DPI, or relying on visual overflow
+    // If scrollHeight > clientHeight, it's overflowing.
+    if (paper.scrollHeight > paper.clientHeight) {
+        marker.style.display = 'block';
+    } else {
+        marker.style.display = 'none';
+    }
 }
 
 // --- EXPORT ---
 function downloadPDF() {
     const element = document.getElementById('invoice-capture');
+    
+    // Hide marker before print
+    document.getElementById('page-break-line').style.display = 'none';
+    
     const opt = {
         margin: 0,
         filename: `Invoice_${document.getElementById('inNum').value}.pdf`,
@@ -131,20 +187,22 @@ function downloadPDF() {
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(element).save();
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Restore check
+        checkOverflow();
+    });
 }
 
 function downloadJPG() {
     const element = document.getElementById('invoice-capture');
+    document.getElementById('page-break-line').style.display = 'none';
+    
     html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
         link.download = `Invoice.jpg`;
         link.href = canvas.toDataURL("image/jpeg");
         link.click();
+        checkOverflow();
     });
-}
-
-function downloadExcel() {
-    // Excel logic omitted for brevity as requested in context, 
-    // but the button remains connected if you use the previous full JS.
 }
