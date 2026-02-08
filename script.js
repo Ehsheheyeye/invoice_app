@@ -1,18 +1,33 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Initial Setup
-    document.getElementById('inDate').valueAsDate = new Date();
-    addItem(); // Add one empty row
-    updatePreview();
+    // 1. Try to Load Data
+    const hasData = loadData();
     
-    // Set initial Zoom
+    // 2. If no data, set defaults
+    if (!hasData) {
+        document.getElementById('inDate').valueAsDate = new Date();
+        addItem(); 
+    }
+    
+    // 3. Initialize View
+    updatePreview();
     setZoom(0.8);
+    
+    // 4. Restore Color if saved
+    const savedColor = localStorage.getItem('invoiceTheme');
+    if(savedColor) changeTheme(savedColor);
 });
+
+// --- THEME COLOR ---
+function changeTheme(color) {
+    document.documentElement.style.setProperty('--primary', color);
+    document.getElementById('themeColor').value = color;
+    localStorage.setItem('invoiceTheme', color);
+}
 
 // --- ZOOM LOGIC ---
 function setZoom(value) {
     const wrapper = document.getElementById('previewWrapper');
     const display = document.getElementById('zoomValue');
-    
     wrapper.style.transform = `scale(${value})`;
     display.innerText = `${Math.round(value * 100)}%`;
 }
@@ -25,18 +40,11 @@ function adjustZoom(delta) {
     setZoom(newVal);
 }
 
-// --- SIDEBAR ACCORDION LOGIC ---
+// --- SIDEBAR ---
 function toggleCard(header) {
-    // Toggle the 'active' class for rotation
     header.classList.toggle('active');
-    
-    // Toggle the body visibility
     const body = header.nextElementSibling;
-    if (body.style.display === "block") {
-        body.style.display = "none";
-    } else {
-        body.style.display = "block";
-    }
+    body.style.display = body.style.display === "block" ? "none" : "block";
 }
 
 // --- LOGO HANDLING ---
@@ -50,6 +58,7 @@ function handleLogoUpload() {
         reader.onload = function(e) {
             previewImg.src = e.target.result;
             container.style.display = 'block';
+            saveData(); // Save logo string (if small enough) or state
         }
         reader.readAsDataURL(fileInput.files[0]);
     }
@@ -57,8 +66,8 @@ function handleLogoUpload() {
 
 function resizeLogo() {
     const size = document.getElementById('logoSize').value;
-    const img = document.getElementById('p-logo');
-    img.style.width = `${size}px`;
+    document.getElementById('p-logo').style.width = `${size}px`;
+    saveData();
 }
 
 // --- PREVIEW UPDATE ---
@@ -80,12 +89,12 @@ function updatePreview() {
 
     calculateTotal();
     checkOverflow();
+    saveData(); // Auto-save on every update
 }
 
 function syncOptional(inputId, previewId) {
     const inputVal = document.getElementById(inputId).value;
     const el = document.getElementById(previewId);
-    
     if (inputVal.trim() !== "") {
         el.style.display = 'block';
         el.innerText = inputVal;
@@ -99,17 +108,17 @@ function syncText(inputId, previewId, fallback) {
     document.getElementById(previewId).innerText = val || fallback;
 }
 
-// --- ITEMS & TOTALS ---
-function addItem() {
+// --- ITEMS & CALCULATIONS ---
+function addItem(desc='', qty=1, price=0) {
     const list = document.getElementById('items-list');
-    const id = Date.now();
+    const id = Date.now() + Math.random(); // Unique ID
     const div = document.createElement('div');
     div.className = 'item-row';
     div.id = `row-${id}`;
     div.innerHTML = `
-        <input type="text" placeholder="Description" class="desc" oninput="calculateTotal()">
-        <input type="number" placeholder="Qty" class="qty" value="1" min="1" oninput="calculateTotal()">
-        <input type="number" placeholder="Price" class="price" value="0" min="0" oninput="calculateTotal()">
+        <input type="text" placeholder="Description" class="desc" value="${desc}" oninput="calculateTotal(); saveData()">
+        <input type="number" placeholder="Qty" class="qty" value="${qty}" min="1" oninput="calculateTotal(); saveData()">
+        <input type="number" placeholder="Price" class="price" value="${price}" min="0" oninput="calculateTotal(); saveData()">
         <button class="btn-del" onclick="removeItem('${id}')"><i class="fa-solid fa-trash"></i></button>
     `;
     list.appendChild(div);
@@ -119,17 +128,19 @@ function removeItem(id) {
     const row = document.getElementById(`row-${id}`);
     if (row) row.remove();
     calculateTotal();
+    saveData();
 }
 
 function calculateTotal() {
     const rows = document.querySelectorAll('.item-row');
     const tbody = document.getElementById('p-items-body');
-    tbody.innerHTML = '';
+    const currency = document.getElementById('currencySymbol').value || '$';
     
+    tbody.innerHTML = '';
     let subtotal = 0;
 
     rows.forEach(row => {
-        const desc = row.querySelector('.desc').value || '';
+        const desc = row.querySelector('.desc').value;
         const qty = parseFloat(row.querySelector('.qty').value) || 0;
         const price = parseFloat(row.querySelector('.price').value) || 0;
         const total = qty * price;
@@ -140,32 +151,125 @@ function calculateTotal() {
             tr.innerHTML = `
                 <td style="text-align: left;">${desc}</td>
                 <td>${qty}</td>
-                <td>$${price.toFixed(2)}</td>
-                <td>$${total.toFixed(2)}</td>
+                <td>${currency}${price.toFixed(2)}</td>
+                <td>${currency}${total.toFixed(2)}</td>
             `;
             tbody.appendChild(tr);
         }
     });
 
-    const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
-    const taxAmt = subtotal * (taxRate / 100);
-    const grandTotal = subtotal + taxAmt;
+    // Discount
+    const discRate = parseFloat(document.getElementById('discountRate').value) || 0;
+    const discAmt = subtotal * (discRate / 100);
+    const afterDisc = subtotal - discAmt;
 
-    document.getElementById('p-subtotal').innerText = `$${subtotal.toFixed(2)}`;
+    // Tax
+    const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+    const taxAmt = afterDisc * (taxRate / 100);
+    
+    const grandTotal = afterDisc + taxAmt;
+
+    // Update Text
+    document.getElementById('p-subtotal').innerText = `${currency}${subtotal.toFixed(2)}`;
+    document.getElementById('p-discRate').innerText = discRate;
+    document.getElementById('p-discAmt').innerText = `-${currency}${discAmt.toFixed(2)}`;
+    
     document.getElementById('p-taxRate').innerText = taxRate;
-    document.getElementById('p-taxAmt').innerText = `$${taxAmt.toFixed(2)}`;
-    document.getElementById('p-total').innerText = `$${grandTotal.toFixed(2)}`;
+    document.getElementById('p-taxAmt').innerText = `+${currency}${taxAmt.toFixed(2)}`;
+    
+    document.getElementById('p-total').innerText = `${currency}${grandTotal.toFixed(2)}`;
     
     checkOverflow();
+}
+
+// --- AUTO SAVE & LOAD ---
+function saveData() {
+    const data = {
+        inNum: document.getElementById('inNum').value,
+        inDate: document.getElementById('inDate').value,
+        currency: document.getElementById('currencySymbol').value,
+        theme: document.getElementById('themeColor').value,
+        sender: {
+            name: document.getElementById('senderName').value,
+            services: document.getElementById('senderServices').value,
+            address: document.getElementById('senderAddress').value,
+            contact: document.getElementById('senderContact').value,
+            email: document.getElementById('senderEmail').value
+        },
+        client: {
+            name: document.getElementById('clientName').value,
+            address: document.getElementById('clientAddress').value,
+            contact: document.getElementById('clientContact').value,
+            email: document.getElementById('clientEmail').value
+        },
+        items: [],
+        discount: document.getElementById('discountRate').value,
+        tax: document.getElementById('taxRate').value,
+        notes: document.getElementById('notesInput').value
+    };
+
+    // Save Items
+    document.querySelectorAll('.item-row').forEach(row => {
+        data.items.push({
+            desc: row.querySelector('.desc').value,
+            qty: row.querySelector('.qty').value,
+            price: row.querySelector('.price').value
+        });
+    });
+
+    localStorage.setItem('invoiceData', JSON.stringify(data));
+}
+
+function loadData() {
+    const saved = localStorage.getItem('invoiceData');
+    if (!saved) return false;
+
+    const data = JSON.parse(saved);
+
+    document.getElementById('inNum').value = data.inNum || '#INV-001';
+    document.getElementById('inDate').value = data.inDate || '';
+    document.getElementById('currencySymbol').value = data.currency || '$';
+    document.getElementById('themeColor').value = data.theme || '#3b82f6';
+
+    document.getElementById('senderName').value = data.sender.name || '';
+    document.getElementById('senderServices').value = data.sender.services || '';
+    document.getElementById('senderAddress').value = data.sender.address || '';
+    document.getElementById('senderContact').value = data.sender.contact || '';
+    document.getElementById('senderEmail').value = data.sender.email || '';
+
+    document.getElementById('clientName').value = data.client.name || '';
+    document.getElementById('clientAddress').value = data.client.address || '';
+    document.getElementById('clientContact').value = data.client.contact || '';
+    document.getElementById('clientEmail').value = data.client.email || '';
+
+    document.getElementById('discountRate').value = data.discount || 0;
+    document.getElementById('taxRate').value = data.tax || 0;
+    document.getElementById('notesInput').value = data.notes || '';
+
+    // Rebuild Items
+    const list = document.getElementById('items-list');
+    list.innerHTML = ''; // Clear defaults
+    if (data.items && data.items.length > 0) {
+        data.items.forEach(item => addItem(item.desc, item.qty, item.price));
+    } else {
+        addItem();
+    }
+
+    return true;
+}
+
+function clearData() {
+    if(confirm("Are you sure you want to clear all data?")) {
+        localStorage.removeItem('invoiceData');
+        localStorage.removeItem('invoiceTheme');
+        location.reload();
+    }
 }
 
 // --- OVERFLOW CHECKER ---
 function checkOverflow() {
     const paper = document.getElementById('invoice-capture');
     const marker = document.getElementById('page-break-line');
-    
-    // A4 height in pixels (approx) at standard DPI, or relying on visual overflow
-    // If scrollHeight > clientHeight, it's overflowing.
     if (paper.scrollHeight > paper.clientHeight) {
         marker.style.display = 'block';
     } else {
@@ -176,10 +280,7 @@ function checkOverflow() {
 // --- EXPORT ---
 function downloadPDF() {
     const element = document.getElementById('invoice-capture');
-    
-    // Hide marker before print
     document.getElementById('page-break-line').style.display = 'none';
-    
     const opt = {
         margin: 0,
         filename: `Invoice_${document.getElementById('inNum').value}.pdf`,
@@ -187,17 +288,12 @@ function downloadPDF() {
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
-    
-    html2pdf().set(opt).from(element).save().then(() => {
-        // Restore check
-        checkOverflow();
-    });
+    html2pdf().set(opt).from(element).save().then(() => checkOverflow());
 }
 
 function downloadJPG() {
     const element = document.getElementById('invoice-capture');
     document.getElementById('page-break-line').style.display = 'none';
-    
     html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
         const link = document.createElement('a');
         link.download = `Invoice.jpg`;
