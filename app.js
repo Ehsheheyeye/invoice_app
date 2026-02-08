@@ -1,37 +1,34 @@
-import { auth, db, storage, signOut, onAuthStateChanged, doc, setDoc, getDoc, ref, uploadBytes, getDownloadURL } from "./firebase-config.js";
+import { auth, db, signOut, onAuthStateChanged, doc, setDoc, getDoc } from "./firebase-config.js";
 
 let currentUser = null;
 let saveTimeout = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Auth Guard: Check if user is logged in
+    // 1. Check Login
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
             document.getElementById('userEmail').innerText = user.email;
-            loadUserData(user.uid); // Load their specific data
+            loadUserData(user.uid);
         } else {
-            window.location.href = "index.html"; // Kick them out if not logged in
+            window.location.href = "index.html"; // Go home if not logged in
         }
     });
 
-    // 2. Setup Inputs
+    // 2. Setup
     document.getElementById('inDate').valueAsDate = new Date();
     addItem(); 
     updatePreview();
     setZoom(0.8);
 
-    // 3. Logo Upload Listener
+    // 3. Listeners
     document.getElementById('logoInput').addEventListener('change', handleLogoUpload);
-
-    // 4. Logout Listener
     document.getElementById('logoutBtn').addEventListener('click', () => {
         signOut(auth).then(() => window.location.href = "index.html");
     });
 });
 
-// --- DATABASE FUNCTIONS ---
-
+// --- DATABASE LOAD ---
 async function loadUserData(uid) {
     const docRef = doc(db, "users", uid);
     const docSnap = await getDoc(docRef);
@@ -39,12 +36,13 @@ async function loadUserData(uid) {
     if (docSnap.exists()) {
         const data = docSnap.data();
         
-        // Fill Fields
-        if(data.theme) changeTheme(data.theme);
-        if(data.logoUrl) {
-            document.getElementById('p-logo').src = data.logoUrl;
+        // Load Logo (from text)
+        if(data.logoBase64) {
+            document.getElementById('p-logo').src = data.logoBase64;
             document.getElementById('logo-container').style.display = 'block';
         }
+
+        if(data.theme) changeTheme(data.theme);
 
         setVal('currencySymbol', data.currency || '$');
         setVal('inNum', data.inNum || '#INV-001');
@@ -64,7 +62,7 @@ async function loadUserData(uid) {
         setVal('taxRate', data.tax || 0);
         setVal('notesInput', data.notes || '');
 
-        // Rebuild Items
+        // Items
         const list = document.getElementById('items-list');
         list.innerHTML = '';
         if (data.items && data.items.length > 0) {
@@ -76,12 +74,12 @@ async function loadUserData(uid) {
     }
 }
 
+// --- DATABASE SAVE ---
 function saveData() {
     if (!currentUser) return;
     
     document.getElementById('saveStatus').innerText = "Saving...";
     
-    // Debounce: Wait 1 second after typing stops to save
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {
         const data = {
@@ -105,10 +103,9 @@ function saveData() {
             discount: getVal('discountRate'),
             tax: getVal('taxRate'),
             notes: getVal('notesInput'),
-            // Note: We don't save the Logo URL here, that's handled in upload
+            // Note: Logo is saved separately in handleLogoUpload
         };
 
-        // Get Items
         document.querySelectorAll('.item-row').forEach(row => {
             data.items.push({
                 desc: row.querySelector('.desc').value,
@@ -117,13 +114,41 @@ function saveData() {
             });
         });
 
-        // Send to Firebase
         await setDoc(doc(db, "users", currentUser.uid), data, { merge: true });
         document.getElementById('saveStatus').innerHTML = 'Saved <i class="fa-solid fa-check"></i>';
     }, 1000);
 }
 
-// --- HELPER FUNCTIONS ---
+// --- NEW LOGO LOGIC (FREE) ---
+function handleLogoUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check size (Max 0.8 MB to be safe for free database)
+    if (file.size > 800000) {
+        alert("Image is too large! Please use an image smaller than 800KB.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function(event) {
+        const base64String = event.target.result;
+        
+        // Show immediately
+        document.getElementById('p-logo').src = base64String;
+        document.getElementById('logo-container').style.display = 'block';
+
+        // Save to Database
+        if(currentUser) {
+            document.getElementById('saveStatus').innerText = "Saving Logo...";
+            await setDoc(doc(db, "users", currentUser.uid), { logoBase64: base64String }, { merge: true });
+            document.getElementById('saveStatus').innerHTML = 'Logo Saved <i class="fa-solid fa-check"></i>';
+        }
+    }
+    reader.readAsDataURL(file);
+}
+
+// --- HELPERS ---
 function setVal(id, val) { 
     const el = document.getElementById(id);
     if(el) el.value = val; 
@@ -133,33 +158,7 @@ function getVal(id) {
     return el ? el.value : ''; 
 }
 
-// --- LOGO UPLOAD (TO FIREBASE STORAGE) ---
-async function handleLogoUpload(e) {
-    if (!currentUser) return;
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const storageRef = ref(storage, `logos/${currentUser.uid}`);
-    
-    try {
-        document.getElementById('saveStatus').innerText = "Uploading Logo...";
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
-        
-        // Update Preview
-        document.getElementById('p-logo').src = url;
-        document.getElementById('logo-container').style.display = 'block';
-        
-        // Save URL to DB
-        await setDoc(doc(db, "users", currentUser.uid), { logoUrl: url }, { merge: true });
-        document.getElementById('saveStatus').innerHTML = 'Logo Saved <i class="fa-solid fa-check"></i>';
-    } catch (err) {
-        console.error("Upload failed", err);
-        alert("Upload failed. Make sure you enabled Firebase Storage!");
-    }
-}
-
-// --- APP LOGIC (Same as before but calls saveData) ---
+// --- APP FUNCTIONS ---
 window.changeTheme = function(color) {
     document.documentElement.style.setProperty('--primary', color);
     saveData();
@@ -181,13 +180,9 @@ window.updatePreview = function() {
 
     calculateTotal();
     checkOverflow();
-    saveData(); // Auto-save trigger
+    saveData(); 
 }
-// ... (Include the rest of your syncOptional, syncText, calculateTotal logic here)
-// Important: Add 'saveData()' to your addItem and removeItem logic inside those functions.
 
-// (For brevity, re-paste the calculateTotal, addItem, removeItem functions from previous step 
-//  but ADD "saveData();" at the end of them.)
 window.addItem = function(desc='', qty=1, price=0) {
     const list = document.getElementById('items-list');
     const id = Date.now() + Math.random();
@@ -202,20 +197,56 @@ window.addItem = function(desc='', qty=1, price=0) {
     `;
     list.appendChild(div);
 }
+
 window.removeItem = function(id) {
     const row = document.getElementById(`row-${id}`);
     if (row) row.remove();
     calculateTotal();
     saveData();
 }
+
 window.calculateTotal = function() {
-     // ... (Copy exact logic from previous script.js, but ensure currency symbol is dynamic)
+    const rows = document.querySelectorAll('.item-row');
+    const tbody = document.getElementById('p-items-body');
     const currency = document.getElementById('currencySymbol').value || '$';
-    // ... (rest of logic using 'currency' variable) ...
-    // ... 
-    // At end of function:
+    
+    tbody.innerHTML = '';
+    let subtotal = 0;
+
+    rows.forEach(row => {
+        const desc = row.querySelector('.desc').value;
+        const qty = parseFloat(row.querySelector('.qty').value) || 0;
+        const price = parseFloat(row.querySelector('.price').value) || 0;
+        const total = qty * price;
+        subtotal += total;
+
+        if(desc || qty || price) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="text-align: left;">${desc}</td>
+                <td>${qty}</td>
+                <td>${currency}${price.toFixed(2)}</td>
+                <td>${currency}${total.toFixed(2)}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+
+    const discRate = parseFloat(document.getElementById('discountRate').value) || 0;
+    const discAmt = subtotal * (discRate / 100);
+    const afterDisc = subtotal - discAmt;
+    const taxRate = parseFloat(document.getElementById('taxRate').value) || 0;
+    const taxAmt = afterDisc * (taxRate / 100);
+    const grandTotal = afterDisc + taxAmt;
+
+    document.getElementById('p-subtotal').innerText = `${currency}${subtotal.toFixed(2)}`;
+    document.getElementById('p-discRate').innerText = discRate;
+    document.getElementById('p-discAmt').innerText = `-${currency}${discAmt.toFixed(2)}`;
+    document.getElementById('p-taxRate').innerText = taxRate;
+    document.getElementById('p-taxAmt').innerText = `+${currency}${taxAmt.toFixed(2)}`;
+    document.getElementById('p-total').innerText = `${currency}${grandTotal.toFixed(2)}`;
+    
     checkOverflow();
-    // Don't call saveData() here usually, because oninput triggers it via updatePreview
 }
 
 window.checkOverflow = function() {
@@ -225,24 +256,24 @@ window.checkOverflow = function() {
     else marker.style.display = 'none';
 }
 
-// ... (Copy downloadPDF and downloadJPG logic)
 window.toggleCard = function(header) {
     header.classList.toggle('active');
     const body = header.nextElementSibling;
     body.style.display = body.style.display === "block" ? "none" : "block";
 }
+
 window.resizeLogo = function() {
     const size = document.getElementById('logoSize').value;
     document.getElementById('p-logo').style.width = `${size}px`;
-    // Logo size isn't critical to save instantly, but you can if you want
 }
-// ZOOM
+
 window.setZoom = function(value) {
     const wrapper = document.getElementById('previewWrapper');
     const display = document.getElementById('zoomValue');
     wrapper.style.transform = `scale(${value})`;
     display.innerText = `${Math.round(value * 100)}%`;
 }
+
 window.adjustZoom = function(delta) {
     const range = document.getElementById('zoomRange');
     let newVal = parseFloat(range.value) + delta;
@@ -250,11 +281,12 @@ window.adjustZoom = function(delta) {
     range.value = newVal;
     setZoom(newVal);
 }
-// HELPER FOR SYNC (Needed for updatePreview)
+
 window.syncText = function(inputId, previewId, fallback) {
     const val = document.getElementById(inputId).value;
     document.getElementById(previewId).innerText = val || fallback;
 }
+
 window.syncOptional = function(inputId, previewId) {
     const inputVal = document.getElementById(inputId).value;
     const el = document.getElementById(previewId);
@@ -265,12 +297,14 @@ window.syncOptional = function(inputId, previewId) {
         el.style.display = 'none';
     }
 }
+
 window.downloadPDF = function() {
     const element = document.getElementById('invoice-capture');
     document.getElementById('page-break-line').style.display = 'none';
     const opt = { margin: 0, filename: `Invoice.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
     html2pdf().set(opt).from(element).save().then(() => checkOverflow());
 }
+
 window.downloadJPG = function() {
     const element = document.getElementById('invoice-capture');
     document.getElementById('page-break-line').style.display = 'none';
