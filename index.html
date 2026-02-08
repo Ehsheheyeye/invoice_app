@@ -3,220 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Invoice Maker</title>
+    <title>ProInvoice - Free Online Invoice Generator</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="landing-page">
 
-    <div class="app-container">
-        
-        <main class="preview-panel">
-            
-            <div class="zoom-controls">
-                <button onclick="adjustZoom(-0.1)"><i class="fa-solid fa-minus"></i></button>
-                <input type="range" id="zoomRange" min="0.4" max="1.5" step="0.1" value="0.8" oninput="setZoom(this.value)">
-                <button onclick="adjustZoom(0.1)"><i class="fa-solid fa-plus"></i></button>
-                <span id="zoomValue">80%</span>
-            </div>
+    <nav class="navbar">
+        <div class="logo">Pro<span style="color:var(--primary)">Invoice</span></div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how-it-works">How it Works</a>
+        </div>
+        <div class="auth-buttons">
+            <button id="loginBtn" class="btn-primary-small"><i class="fa-brands fa-google"></i> Login with Google</button>
+            <button id="dashboardBtn" class="btn-primary-small" style="display:none;">Go to App <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+    </nav>
 
-            <div class="preview-scroll-area">
-                <div class="preview-wrapper" id="previewWrapper">
-                    <div id="invoice-capture" class="invoice-paper">
-                        
-                        <div class="top-header">
-                            <div class="title-section">
-                                <h1>INVOICE</h1>
-                            </div>
-                            <div class="meta-section">
-                                <p>No: <span id="p-num">#INV-001</span></p>
-                                <p>Date: <span id="p-date"></span></p>
-                            </div>
-                        </div>
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Create Professional Invoices in Seconds</h1>
+            <p>The fastest way to bill your clients. Auto-save your details, customize colors, and get paid faster. Completely Free.</p>
+            <button id="heroCta" class="btn-hero">Create Free Invoice Now</button>
+            <p class="small-text"><i class="fa-solid fa-check"></i> No credit card required • <i class="fa-solid fa-check"></i> Google Secure Login</p>
+        </div>
+        <div class="hero-image">
+            <img src="https://via.placeholder.com/600x400/e2e8f0/94a3b8?text=Invoice+Preview" alt="Invoice App Preview">
+        </div>
+    </header>
 
-                        <div class="divider-line"></div>
+    <section id="features" class="features">
+        <div class="feature-card">
+            <i class="fa-solid fa-bolt"></i>
+            <h3>Lightning Fast</h3>
+            <p>Your company details are auto-saved. Just fill in the client and items.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fa-solid fa-cloud"></i>
+            <h3>Cloud Sync</h3>
+            <p>Login from any device. Your settings and logo travel with you.</p>
+        </div>
+        <div class="feature-card">
+            <i class="fa-solid fa-file-pdf"></i>
+            <h3>PDF Export</h3>
+            <p>Generate clean, professional A4 PDFs instantly.</p>
+        </div>
+    </section>
 
-                        <div class="address-section">
-                            <div class="sender-col">
-                                <div id="logo-container" style="display:none; margin-bottom: 15px;">
-                                    <img id="p-logo" src="" style="width: 150px; height: auto;">
-                                </div>
-                                <h2 id="p-senderName">Your Company</h2>
-                                <p class="services-text" id="p-senderServices">Sales, Service & Support</p>
-                                <div class="contact-details">
-                                    <p id="p-senderAddress">Street Address, City, Zip</p>
-                                    <p id="p-senderContact">Phone: 123-456-7890</p>
-                                    <p id="p-senderEmail">email@example.com</p>
-                                </div>
-                            </div>
+    <footer>
+        <p>&copy; 2026 ProInvoice. All rights reserved.</p>
+    </footer>
 
-                            <div class="client-col">
-                                <h4 class="bill-label">BILL TO:</h4>
-                                <h2 id="p-clientName">Client Name</h2>
-                                <div class="contact-details">
-                                    <p id="p-clientAddress">Client Address</p>
-                                    <p id="p-clientContact">Client Phone</p>
-                                    <p id="p-clientEmail">client@email.com</p>
-                                </div>
-                            </div>
-                        </div>
+    <script type="module">
+        import { auth, provider, signInWithPopup, onAuthStateChanged } from "./firebase-config.js";
 
-                        <div class="table-container">
-                            <table class="inv-table">
-                                <thead>
-                                    <tr>
-                                        <th width="50%">Description</th>
-                                        <th width="15%">Qty</th>
-                                        <th width="15%">Price</th>
-                                        <th width="20%">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="p-items-body"></tbody>
-                            </table>
-                        </div>
+        const loginBtn = document.getElementById('loginBtn');
+        const heroCta = document.getElementById('heroCta');
+        const dashboardBtn = document.getElementById('dashboardBtn');
 
-                        <div class="inv-totals">
-                            <div class="total-row">
-                                <span>Subtotal</span>
-                                <span id="p-subtotal">$0.00</span>
-                            </div>
-                            <div class="total-row">
-                                <span>Discount (<span id="p-discRate">0</span>%)</span>
-                                <span id="p-discAmt">$0.00</span>
-                            </div>
-                            <div class="total-row">
-                                <span>Tax (<span id="p-taxRate">0</span>%)</span>
-                                <span id="p-taxAmt">$0.00</span>
-                            </div>
-                            <div class="total-row grand-total">
-                                <span>Total</span>
-                                <span id="p-total">$0.00</span>
-                            </div>
-                        </div>
-
-                        <div class="inv-footer">
-                            <p id="p-notes">Thank you for your business.</p>
-                        </div>
-
-                        <div id="page-break-line" class="page-break-marker">
-                            <span><i class="fa-solid fa-scissors"></i> End of Page 1 (Content below this may be cut off)</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <aside class="editor-panel">
-            <header class="panel-header">
-                <h2><i class="fa-solid fa-sliders"></i> Invoice Settings</h2>
-                <button onclick="clearData()" class="reset-btn" title="Clear All Data"><i class="fa-solid fa-rotate-left"></i> Reset</button>
-            </header>
-
-            <div class="editor-content">
-                
-                <div class="editor-card">
-                    <div class="card-header" onclick="toggleCard(this)">
-                        <span><i class="fa-solid fa-image"></i> Branding & Settings</span>
-                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label>Currency Symbol</label>
-                            <input type="text" id="currencySymbol" value="$" placeholder="$" oninput="updatePreview()">
-                        </div>
-                        <div class="form-group">
-                            <label>Theme Color</label>
-                            <input type="color" id="themeColor" value="#3b82f6" style="height: 40px; padding: 2px;" oninput="changeTheme(this.value)">
-                        </div>
-                        <div class="form-group">
-                            <label>Invoice Number</label>
-                            <input type="text" id="inNum" value="#INV-001" oninput="updatePreview()">
-                        </div>
-                        <div class="form-group">
-                            <label>Date</label>
-                            <input type="date" id="inDate" oninput="updatePreview()">
-                        </div>
-                        <div class="form-group">
-                            <label>Upload Logo</label>
-                            <input type="file" id="logoInput" accept="image/*" onchange="handleLogoUpload()">
-                        </div>
-                        <div class="form-group">
-                            <label>Logo Size</label>
-                            <input type="range" id="logoSize" min="50" max="300" value="150" oninput="resizeLogo()">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="editor-card">
-                    <div class="card-header" onclick="toggleCard(this)">
-                        <span><i class="fa-solid fa-building"></i> From (Sender)</span>
-                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="card-body">
-                        <input type="text" id="senderName" placeholder="Company Name" oninput="updatePreview()">
-                        <input type="text" id="senderServices" placeholder="Services (e.g. Sales...)" oninput="updatePreview()">
-                        <input type="text" id="senderAddress" placeholder="Street Address" oninput="updatePreview()">
-                        <input type="text" id="senderContact" placeholder="Phone Number" oninput="updatePreview()">
-                        <input type="text" id="senderEmail" placeholder="Email Address" oninput="updatePreview()">
-                    </div>
-                </div>
-
-                <div class="editor-card">
-                    <div class="card-header" onclick="toggleCard(this)">
-                        <span><i class="fa-solid fa-user"></i> Bill To (Client)</span>
-                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="card-body">
-                        <input type="text" id="clientName" placeholder="Client Name" oninput="updatePreview()">
-                        <input type="text" id="clientAddress" placeholder="Client Address" oninput="updatePreview()">
-                        <input type="text" id="clientContact" placeholder="Client Phone" oninput="updatePreview()">
-                        <input type="text" id="clientEmail" placeholder="Client Email" oninput="updatePreview()">
-                    </div>
-                </div>
-
-                <div class="editor-card">
-                    <div class="card-header" onclick="toggleCard(this)">
-                        <span><i class="fa-solid fa-list-check"></i> Items & Costs</span>
-                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="card-body">
-                        <div id="items-list"></div>
-                        <button class="btn-secondary" onclick="addItem()"><i class="fa-solid fa-plus"></i> Add New Item</button>
-                        
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>Discount (%)</label>
-                            <input type="number" id="discountRate" value="0" oninput="calculateTotal()">
-                        </div>
-                        <div class="form-group">
-                            <label>Tax Rate (%)</label>
-                            <input type="number" id="taxRate" value="0" oninput="calculateTotal()">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="editor-card">
-                    <div class="card-header" onclick="toggleCard(this)">
-                        <span><i class="fa-solid fa-note-sticky"></i> Footer Notes</span>
-                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
-                    </div>
-                    <div class="card-body">
-                        <textarea id="notesInput" rows="3" placeholder="Thank you for your business..." oninput="updatePreview()"></textarea>
-                    </div>
-                </div>
-
-                <div class="actions">
-                    <button class="btn-primary" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
-                    <button class="btn-outline" onclick="downloadJPG()"><i class="fa-solid fa-image"></i> Save JPG</button>
-                </div>
-
-            </div>
-        </aside>
-
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="script.js"></script>
+        // Check Login Status
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is logged in
+                loginBtn.style.display = 'none';
+                dashboardBtn.style.display = 'block';
+                heroCta.innerText = "Open Invoice Editor";
+                heroCta.onclick = () => window.location.href = "app.html";
+                dashboardBtn.onclick = () => window.location.href = "app.html";
+            } else {
+                // User is logged out
+                loginBtn.style.display = 'block';
+                dashboardBtn.style.display = 'none';
+                const loginAction = () => {
+                    signInWithPopup(auth, provider)
+                        .then(() => window.location.href = "app.html") // Redirect to App
+                        .catch((error) => alert("Login Failed: " + error.message));
+                };
+                loginBtn.onclick = loginAction;
+                heroCta.onclick = loginAction;
+            }
+        });
+    </script>
 </body>
 </html>
