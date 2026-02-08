@@ -1,152 +1,212 @@
 :root {
-    --primary: #2563eb;
+    --primary: #3b82f6; /* Modern Blue */
+    --primary-hover: #2563eb;
     --dark: #1e293b;
-    --light: #f8fafc;
-    --border: #cbd5e1;
-    --table-border: #94a3b8; 
+    --gray: #64748b;
+    --light-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Inter', sans-serif; background: #525252; height: 100vh; overflow: hidden; }
+* { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+body { font-family: 'Inter', sans-serif; background: #0f172a; height: 100vh; overflow: hidden; color: var(--dark); }
 
 /* LAYOUT */
 .app-container { display: flex; height: 100vh; }
 
-/* SIDEBAR (NOW ON RIGHT) */
-.editor-panel {
-    width: 400px;
-    background: #fff;
-    
-    /* CHANGED: Border is now on the LEFT, shadow casts to the LEFT */
-    border-left: 1px solid var(--border);
-    box-shadow: -2px 0 10px rgba(0,0,0,0.05);
-    
+/* --- LEFT: PREVIEW PANEL --- */
+.preview-panel {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 20px;
-    overflow-y: auto;
-    z-index: 10;
+    background: #334155; /* Dark background for contrast */
+    position: relative;
+    overflow: hidden;
 }
 
-.accordion h3 { font-size: 0.9rem; color: var(--primary); margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-.form-group, .accordion { margin-bottom: 20px; }
-label { display: block; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 4px; margin-top: 8px; }
-input, textarea { width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.9rem; }
-input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+/* Zoom Controls */
+.zoom-controls {
+    background: #1e293b;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    z-index: 20;
+}
+.zoom-controls button {
+    background: transparent; border: 1px solid #475569; color: white;
+    width: 32px; height: 32px; border-radius: 4px; cursor: pointer;
+}
+.zoom-controls button:hover { background: var(--primary); border-color: var(--primary); }
+.zoom-controls input[type=range] { width: 150px; cursor: pointer; }
 
-/* ITEM ROWS */
-.item-row { display: flex; gap: 5px; margin-bottom: 8px; }
-.item-row input { flex: 1; }
-.item-row .qty { flex: 0 0 60px; }
-.item-row .price { flex: 0 0 80px; }
-.btn-del { background: #fee2e2; color: #ef4444; border: none; width: 30px; border-radius: 4px; cursor: pointer; }
-
-/* BUTTONS */
-.btn-primary { background: var(--primary); color: #fff; width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin-bottom: 10px; }
-.btn-secondary { background: var(--light); color: var(--dark); width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; margin-top: 5px; }
-.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 48%; padding: 10px; border-radius: 6px; cursor: pointer; margin-right: 2%; }
-.btn-outline:last-child { margin-right: 0; }
-
-/* PREVIEW AREA (NOW ON LEFT) */
-.preview-panel { 
-    flex: 1; 
-    display: flex; 
-    justify-content: center; 
-    padding: 40px; 
-    overflow-y: auto; 
-    background: #404040; 
+/* Scroll Area & Wrapper */
+.preview-scroll-area {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    padding: 40px;
+}
+.preview-wrapper {
+    transition: transform 0.2s ease;
+    transform-origin: top center;
 }
 
+/* A4 PAPER FIXED SIZE */
 .invoice-paper {
     width: 210mm;
-    min-height: 297mm;
-    background: #fff;
-    padding: 50px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    color: var(--dark);
-    display: flex; 
-    flex-direction: column;
-}
-
-/* --- INVOICE DESIGN (UNCHANGED) --- */
-.top-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 10px;
+    height: 297mm; /* FIXED A4 HEIGHT */
+    background: white;
+    padding: 15mm;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
     position: relative;
+    overflow: hidden; /* Hide overflow initially, but show marker */
 }
-.title-section {
+
+/* Page Break Marker (Warns user) */
+.page-break-marker {
     position: absolute;
-    left: 0; 
-    right: 0;
+    top: 295mm; /* Just before end */
+    left: 0; width: 100%;
+    border-top: 2px dashed #ef4444;
+    color: #ef4444;
+    font-size: 12px;
+    font-weight: bold;
     text-align: center;
-    top: 0;
-}
-.title-section h1 {
-    font-size: 2.8rem;
-    color: var(--primary);
-    font-weight: 800;
-    margin: 0;
-    text-transform: uppercase;
-}
-.meta-section {
-    margin-left: auto; 
-    text-align: right;
-    margin-top: 45px;
-    z-index: 2;
-}
-.meta-section p { font-weight: 700; font-size: 1rem; color: #334155; margin-bottom: 4px; }
-
-/* DIVIDER */
-.divider-line {
-    height: 3px;
-    background: var(--primary);
-    width: 100%;
-    margin: 20px 0 30px 0;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 0;
+    display: none; /* Hidden by default, JS can toggle if overflow detected */
 }
 
-/* ADDRESS SECTION */
-.address-section {
+/* --- RIGHT: EDITOR PANEL --- */
+.editor-panel {
+    width: 420px;
+    background: #f8fafc;
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    z-index: 30;
+}
+
+.panel-header {
+    background: white;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+.panel-header h2 { font-size: 1.2rem; color: var(--dark); display: flex; align-items: center; gap: 10px; }
+
+.editor-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* CARDS DESIGN */
+.editor-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 15px;
+    background: white;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--dark);
+    cursor: pointer;
     display: flex;
     justify-content: space-between;
-    margin-bottom: 40px;
+    align-items: center;
+    transition: background 0.2s;
+}
+.card-header:hover { background: #f8fafc; }
+.card-header .toggle-icon { transition: transform 0.3s ease; color: var(--gray); font-size: 0.8rem; }
+.card-header.active .toggle-icon { transform: rotate(180deg); color: var(--primary); }
+.card-header.active { border-bottom: 1px solid #f1f5f9; }
+
+.card-body {
+    padding: 15px;
+    display: none; /* Hidden by default */
+    background: #fff;
+    animation: slideDown 0.3s ease;
 }
 
-/* Left Column: Sender */
-.sender-col { text-align: left; max-width: 50%; }
-.sender-col h2 { font-size: 1.6rem; color: var(--dark); margin-bottom: 5px; font-weight: 800; }
-.services-text { font-weight: 600; color: #475569; margin-bottom: 10px; font-size: 0.95rem; }
-.contact-details p { font-size: 0.95rem; color: #64748b; line-height: 1.5; margin-bottom: 2px; }
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 
-/* Right Column: Bill To */
-.client-col { text-align: right; max-width: 45%; }
-.bill-label { color: #94a3b8; font-size: 1rem; text-transform: uppercase; margin-bottom: 5px; font-weight: 700; }
-.client-col h2 { font-size: 1.4rem; color: var(--dark); margin-bottom: 10px; }
+/* Form Elements */
+label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--gray); margin-bottom: 6px; margin-top: 10px; }
+label:first-child { margin-top: 0; }
+input, textarea { 
+    width: 100%; padding: 10px; border: 1px solid var(--border); 
+    border-radius: 6px; font-size: 0.9rem; margin-bottom: 8px; 
+    transition: border-color 0.2s;
+}
+input:focus, textarea:focus { border-color: var(--primary); }
 
-/* TABLE */
-.inv-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid var(--table-border); }
-.inv-table th { background: #f1f5f9; padding: 12px; text-align: center; border: 1px solid var(--table-border); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; }
-.inv-table th:first-child { text-align: left; }
-.inv-table td { padding: 12px; border: 1px solid var(--table-border); font-size: 0.95rem; }
+/* Item Rows */
+.item-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+.item-row .desc { flex: 2; }
+.item-row .qty, .item-row .price { flex: 0 0 70px; }
+.btn-del { 
+    background: #fee2e2; color: #ef4444; border: none; 
+    width: 32px; height: 32px; border-radius: 6px; cursor: pointer; 
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-del:hover { background: #fecaca; }
+
+/* Buttons */
+.btn-secondary { background: #f1f5f9; color: var(--dark); border: 1px dashed #cbd5e1; width: 100%; padding: 10px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.btn-secondary:hover { background: #e2e8f0; border-color: #94a3b8; }
+
+.actions { margin-top: 20px; padding-bottom: 20px; }
+.btn-primary { background: var(--primary); color: white; width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+.btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+.btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); width: 100%; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+.btn-outline:hover { background: #eff6ff; }
+
+/* --- INVOICE INTERNAL DESIGN --- */
+.top-header { display: flex; justify-content: space-between; margin-bottom: 20px; position: relative; }
+.title-section h1 { font-size: 2.5rem; color: var(--primary); text-transform: uppercase; margin: 0; }
+.meta-section { text-align: right; }
+.meta-section p { font-weight: 600; color: var(--dark); margin-bottom: 4px; }
+
+.divider-line { height: 2px; background: var(--border); margin: 10px 0 30px 0; }
+
+.address-section { display: flex; justify-content: space-between; margin-bottom: 40px; gap: 40px; }
+.sender-col, .client-col { flex: 1; }
+.client-col { text-align: right; }
+.bill-label { font-size: 0.8rem; color: var(--gray); letter-spacing: 1px; margin-bottom: 5px; }
+h2 { font-size: 1.4rem; color: var(--dark); margin-bottom: 8px; }
+.contact-details p { color: var(--gray); font-size: 0.9rem; margin-bottom: 3px; }
+
+.inv-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+.inv-table th { background: #f8fafc; padding: 12px; border-bottom: 2px solid var(--border); text-align: left; font-size: 0.85rem; color: var(--gray); text-transform: uppercase; }
+.inv-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); color: var(--dark); }
 .inv-table td:not(:first-child) { text-align: center; }
 .inv-table td:last-child { text-align: right; font-weight: 600; }
 
-/* TOTALS */
-.inv-totals { width: 250px; margin-left: auto; margin-top: 10px; }
-.total-row { display: flex; justify-content: space-between; padding: 8px 0; }
-.grand-total { border-top: 2px solid var(--dark); font-weight: 800; font-size: 1.2rem; padding-top: 10px; color: var(--primary); }
+.inv-totals { margin-left: auto; width: 280px; }
+.total-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.grand-total { border-top: 2px solid var(--dark); border-bottom: none; font-weight: 700; font-size: 1.2rem; color: var(--primary); padding-top: 15px; }
 
-/* FOOTER */
-.inv-footer { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; font-size: 0.9rem; color: #64748b; }
+.inv-footer { position: absolute; bottom: 15mm; left: 15mm; right: 15mm; border-top: 1px solid var(--border); padding-top: 15px; color: var(--gray); font-size: 0.9rem; text-align: center; }
 
-/* Mobile */
-@media (max-width: 900px) {
-    .app-container { flex-direction: column; overflow: auto; }
-    .editor-panel { width: 100%; height: auto; }
-    .invoice-paper { width: 100%; min-height: auto; padding: 20px; }
-    .title-section { position: relative; text-align: left; }
-    .meta-section { margin-top: 10px; text-align: left; margin-left: 0; }
-    .address-section { flex-direction: column; gap: 20px; }
-    .client-col { text-align: left; max-width: 100%; }
+/* Responsive */
+@media (max-width: 1000px) {
+    .app-container { flex-direction: column; overflow: auto; height: auto; }
+    .editor-panel { width: 100%; height: auto; border-left: none; border-top: 1px solid var(--border); order: 2; }
+    .preview-panel { height: 600px; order: 1; }
 }
