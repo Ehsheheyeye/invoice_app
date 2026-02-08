@@ -210,3 +210,19 @@ h2 { font-size: 1.4rem; color: var(--dark); margin-bottom: 8px; }
     .editor-panel { width: 100%; height: auto; border-left: none; border-top: 1px solid var(--border); order: 2; }
     .preview-panel { height: 600px; order: 1; }
 }
+
+.reset-btn {
+    background: transparent;
+    border: 1px solid #fee2e2;
+    color: #ef4444;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
