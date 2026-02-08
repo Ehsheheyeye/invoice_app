@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editor - ProInvoice</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="app-nav">
+        <div class="nav-left">
+            <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
+            <span id="userEmail" class="user-badge">Loading...</span>
+        </div>
+        <button id="logoutBtn" class="btn-outline-small">Logout</button>
+    </nav>
+
+    <div class="app-container">
+        <main class="preview-panel">
+            <div class="zoom-controls">
+                <button onclick="adjustZoom(-0.1)"><i class="fa-solid fa-minus"></i></button>
+                <input type="range" id="zoomRange" min="0.4" max="1.5" step="0.1" value="0.8" oninput="setZoom(this.value)">
+                <button onclick="adjustZoom(0.1)"><i class="fa-solid fa-plus"></i></button>
+                <span id="zoomValue">80%</span>
+            </div>
+
+            <div class="preview-scroll-area">
+                <div class="preview-wrapper" id="previewWrapper">
+                    <div id="invoice-capture" class="invoice-paper">
+                        <div class="top-header">
+                            <div class="title-section"><h1>INVOICE</h1></div>
+                            <div class="meta-section">
+                                <p>No: <span id="p-num">#INV-001</span></p>
+                                <p>Date: <span id="p-date"></span></p>
+                            </div>
+                        </div>
+                        <div class="divider-line"></div>
+                        <div class="address-section">
+                            <div class="sender-col">
+                                <div id="logo-container" style="display:none; margin-bottom: 15px;">
+                                    <img id="p-logo" src="" style="width: 150px; height: auto;">
+                                </div>
+                                <h2 id="p-senderName">Your Company</h2>
+                                <p class="services-text" id="p-senderServices">Sales, Service & Support</p>
+                                <div class="contact-details">
+                                    <p id="p-senderAddress">Street Address</p>
+                                    <p id="p-senderContact">Phone: 123-456-7890</p>
+                                    <p id="p-senderEmail">email@example.com</p>
+                                </div>
+                            </div>
+                            <div class="client-col">
+                                <h4 class="bill-label">BILL TO:</h4>
+                                <h2 id="p-clientName">Client Name</h2>
+                                <div class="contact-details">
+                                    <p id="p-clientAddress">Client Address</p>
+                                    <p id="p-clientContact">Client Phone</p>
+                                    <p id="p-clientEmail">client@email.com</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="inv-table">
+                                <thead>
+                                    <tr>
+                                        <th width="50%">Description</th>
+                                        <th width="15%">Qty</th>
+                                        <th width="15%">Price</th>
+                                        <th width="20%">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="p-items-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="inv-totals">
+                            <div class="total-row"><span>Subtotal</span><span id="p-subtotal">$0.00</span></div>
+                            <div class="total-row"><span>Discount (<span id="p-discRate">0</span>%)</span><span id="p-discAmt">$0.00</span></div>
+                            <div class="total-row"><span>Tax (<span id="p-taxRate">0</span>%)</span><span id="p-taxAmt">$0.00</span></div>
+                            <div class="total-row grand-total"><span>Total</span><span id="p-total">$0.00</span></div>
+                        </div>
+                        <div class="inv-footer"><p id="p-notes">Thank you for your business.</p></div>
+                        <div id="page-break-line" class="page-break-marker"><span><i class="fa-solid fa-scissors"></i> End of Page 1</span></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="editor-panel">
+            <header class="panel-header">
+                <h2><i class="fa-solid fa-sliders"></i> Invoice Settings</h2>
+                <div id="saveStatus" style="font-size: 0.8rem; color: var(--gray);">Saved <i class="fa-solid fa-check"></i></div>
+            </header>
+
+            <div class="editor-content">
+                <div class="editor-card">
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <span><i class="fa-solid fa-image"></i> Branding & Settings</span>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group"><label>Currency</label><input type="text" id="currencySymbol" value="$" oninput="updatePreview()"></div>
+                        <div class="form-group"><label>Color</label><input type="color" id="themeColor" value="#3b82f6" style="height:40px" oninput="changeTheme(this.value)"></div>
+                        <div class="form-group"><label>Inv Number</label><input type="text" id="inNum" value="#INV-001" oninput="updatePreview()"></div>
+                        <div class="form-group"><label>Date</label><input type="date" id="inDate" oninput="updatePreview()"></div>
+                        <div class="form-group"><label>Logo</label><input type="file" id="logoInput" accept="image/*"></div>
+                        <div class="form-group"><label>Size</label><input type="range" id="logoSize" min="50" max="300" value="150" oninput="resizeLogo()"></div>
+                    </div>
+                </div>
+
+                <div class="editor-card">
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <span><i class="fa-solid fa-building"></i> My Company (Auto-Saved)</span>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <input type="text" id="senderName" placeholder="Company Name" oninput="updatePreview()">
+                        <input type="text" id="senderServices" placeholder="Services" oninput="updatePreview()">
+                        <input type="text" id="senderAddress" placeholder="Address" oninput="updatePreview()">
+                        <input type="text" id="senderContact" placeholder="Phone" oninput="updatePreview()">
+                        <input type="text" id="senderEmail" placeholder="Email" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="editor-card">
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <span><i class="fa-solid fa-user"></i> Client Details</span>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <input type="text" id="clientName" placeholder="Client Name" oninput="updatePreview()">
+                        <input type="text" id="clientAddress" placeholder="Client Address" oninput="updatePreview()">
+                        <input type="text" id="clientContact" placeholder="Client Phone" oninput="updatePreview()">
+                        <input type="text" id="clientEmail" placeholder="Client Email" oninput="updatePreview()">
+                    </div>
+                </div>
+
+                <div class="editor-card">
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <span><i class="fa-solid fa-list-check"></i> Items</span>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="card-body">
+                        <div id="items-list"></div>
+                        <button class="btn-secondary" onclick="addItem()"><i class="fa-solid fa-plus"></i> Add Item</button>
+                        <div class="form-group" style="margin-top:10px"><label>Discount %</label><input type="number" id="discountRate" value="0" oninput="calculateTotal()"></div>
+                        <div class="form-group"><label>Tax %</label><input type="number" id="taxRate" value="0" oninput="calculateTotal()"></div>
+                    </div>
+                </div>
+
+                <div class="editor-card">
+                    <div class="card-header" onclick="toggleCard(this)">
+                        <span><i class="fa-solid fa-note-sticky"></i> Notes</span>
+                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                    </div>
+                    <div class="card-body"><textarea id="notesInput" rows="3" placeholder="Thanks..." oninput="updatePreview()"></textarea></div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-primary" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Download PDF</button>
+                    <button class="btn-outline" onclick="downloadJPG()"><i class="fa-solid fa-image"></i> Save JPG</button>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
