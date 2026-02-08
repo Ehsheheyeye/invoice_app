@@ -1,9 +1,6 @@
-// firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCxdPoThxb48mbj5Jzs_Y7p8OVVp4ZIuxc",
@@ -16,10 +13,8 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
-export { auth, db, storage, provider, signInWithPopup, signOut, onAuthStateChanged, doc, setDoc, getDoc, ref, uploadBytes, getDownloadURL };
+export { auth, db, provider, signInWithPopup, signOut, onAuthStateChanged, doc, setDoc, getDoc };
